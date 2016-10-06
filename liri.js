@@ -23,23 +23,35 @@ function tweetIt() {
 	client.get("statuses/user_timeline", {screen_name: "aksm", count: 20}, function(error, tweets, response) {
 				if(error) throw error;
 				for(var i = 0; i < tweets.length; i++) {
-					console.log(tweets[i].text+"\n", (i + 1) % 2 == 0 ? magenta: cyan);
+					console.log((i + 1) % 2 == 0 ? magenta: cyan);
+					console.log(tweets[i].text+"\n");
 				}
 				console.log(reset);
 			});
 }
+function aceofbase() {
+	spotify.lookup({ type: "track", id: "0hrBpAOgrt8RXigk83LLNE" }, function(err, data) {
+			console.log("Artist: "+data.artists[0].name);
+			console.log("Album: "+data.album.name);
+			console.log("Song: "+data.name);
+			console.log("URL: "+data.external_urls.spotify+"\n");
+
+	});
+
+}
 function spotifyIt() {
-	var titleSwitch = title ? title: "The Sign";
-	spotify.search({ type: "track", query: titleSwitch }, function(err, data) {
+	spotify.search({ type: "track", query: title }, function(err, data) {
 		if(err) throw err;
 		for(var i = 0; i < data.tracks.items.length; i++) {
+			console.log((i + 1) % 2 == 0 ? magenta: cyan);
 			var track = data.tracks.items[i];
 			for(var j = 0; j < track.artists.length; j++) {
-				console.log(track.artists[j].name);
+				console.log("Artist: "+track.artists[j].name);
 			}
-			console.log(track.album.name);
-			console.log(track.name);
-			console.log(track.external_urls.spotify+"\n");
+			console.log("Album: "+track.album.name);
+			console.log("Song: "+track.name);
+			console.log("URL: "+track.external_urls.spotify+"\n");
+			console.log(reset);
 		}
 
 	});
@@ -68,7 +80,7 @@ switch(command) {
 		tweetIt();
 		break;
 	case "spotify-this-song":
-		spotifyIt();
+		title ? spotifyIt() : aceofbase();
 		break;
 	case "movie-this":
 		movieIt();
