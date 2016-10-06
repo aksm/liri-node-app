@@ -8,6 +8,7 @@ var spotify = require("spotify");
 var request = require("request");
 var fs = require("fs");
 var exec = require("child_process").exec;
+var util = require("util");
 
 // prepare api call
 var client = new twitter(t.twitterKeys);
@@ -20,6 +21,14 @@ var reset = "\x1b[0m"
 // user arguments
 var command = process.argv[2];
 var title = process.argv[3];
+
+var log_file = fs.WriteStream("./log.txt", {flags: "a"});
+var log_stdout = process.stdout;
+
+console.log = function(d) {
+	log_file.write(util.format(d)+"\n");
+	log_stdout.write(util.format(d)+"\n");
+}
 
 // api call functions
 function tweetIt() {
@@ -119,7 +128,6 @@ function MrNobody() {
 function doIt() {
 	fs.readFile("./random.txt", "utf8", (err, data) => {
 		if (err) throw err;
-		console.log(data);
 		exec("node liri.js "+data, function(error, stdout, stderr) {
 			console.log(stdout);
 			console.log(stderr);
