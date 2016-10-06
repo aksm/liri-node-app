@@ -6,6 +6,8 @@ var t = require("./keys.js");
 var twitter = require("twitter");
 var spotify = require("spotify");
 var request = require("request");
+var fs = require("fs");
+var exec = require("child_process").exec;
 
 // prepare api call
 var client = new twitter(t.twitterKeys);
@@ -69,10 +71,12 @@ function movieIt() {
 		if (!error && response.statusCode == 200) {
 			var movies = JSON.parse(body);
 			for(var i = 0; i < movies.Search.length; i++){
+				console.log(i);
 				var url = "http://www.omdbapi.com/?tomatoes=true&i="+movies.Search[i].imdbID;
 				request(url, function (error, response, body) {
 				  if (!error && response.statusCode == 200) {
 					var movies = JSON.parse(body);
+					console.log(i);
 					console.log((i + 1) % 2 == 0 ? magenta: cyan);
 					console.log("Title: "+movies.Title);
 					console.log("Release: "+movies.Year);
@@ -113,7 +117,14 @@ function MrNobody() {
 
 }
 function doIt() {
-
+	fs.readFile("./random.txt", "utf8", (err, data) => {
+		if (err) throw err;
+		console.log(data);
+		exec("node liri.js "+data, function(error, stdout, stderr) {
+			console.log(stdout);
+			console.log(stderr);
+		});
+	});
 }
 
 // conditionals
