@@ -22,6 +22,7 @@ var reset = "\x1b[0m"
 var command = process.argv[2];
 var title = process.argv[3];
 
+// write output to log file
 var log_file = fs.WriteStream("./log.txt", {flags: "a"});
 var log_stdout = process.stdout;
 
@@ -128,25 +129,19 @@ function MrNobody() {
 function doIt() {
 	fs.readFile("./random.txt", "utf8", (err, data) => {
 		if (err) throw err;
-		exec("node liri.js "+data, function(error, stdout, stderr) {
+		var random = data.split(",");
+		var args = "";
+		for(var i = 0; i < random.length; i++) {
+			args = args+" "+random[i];
+		}
+		exec("node liri.js"+args, function(error, stdout, stderr) {
 			console.log(stdout);
 			console.log(stderr);
 		});
 	});
 }
 
-// conditionals
-// var run = ({
-		// "my-tweets": tweetme(),
-		// "spotify-this-song": spotifyme(),
-		// "movie-this": movieme(),
-		// "do-what-it-says": doItforme()
-		// "my-tweets": console.log(command, "this"),
-		// "spotify-this-song": console.log(command, "that"),
-		// "movie-this": console.log("the other thing"),
-		// "do-what-it-says": console.log("finally")
-// }[command] || console.log("That's not legit."));
-
+// conditionals for user commands
 switch(command) {
 	case "my-tweets":
 		tweetIt();
