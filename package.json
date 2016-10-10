@@ -1,0 +1,26 @@
+{
+  "name": "liri-node-app",
+  "version": "1.0.0",
+  "description": "siri clone",
+  "main": "liri-node-app.js",
+  "dependencies": {
+    "inquirer": "^1.2.1",
+    "request": "^2.75.0",
+    "spotify": "^0.3.0",
+    "twitter": "^1.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aksm/liri-node-app.git"
+  },
+  "author": "Al Min",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aksm/liri-node-app/issues"
+  },
+  "homepage": "https://github.com/aksm/liri-node-app#readme"
+}

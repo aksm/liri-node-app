@@ -1,5 +1,3 @@
-// allow block-scope definitions
-"use strict";
 
 // load packages
 var t = require("./keys.js");
@@ -9,6 +7,7 @@ var request = require("request");
 var fs = require("fs");
 var exec = require("child_process").exec;
 var util = require("util");
+var inquirer = require("inquirer");
 
 // prepare api call
 var client = new twitter(t.twitterKeys);
@@ -18,10 +17,6 @@ var magenta = "\x1b[35m";
 var cyan = "\x1b[36m";
 var reset = "\x1b[0m"
 
-// user arguments
-var command = process.argv[2];
-var title = process.argv[3];
-
 // write output to log file
 var log_file = fs.WriteStream("./log.txt", {flags: "a"});
 var log_stdout = process.stdout;
@@ -30,11 +25,74 @@ console.log = function(d) {
 	log_file.write(util.format(d)+"\n");
 	log_stdout.write(util.format(d)+"\n");
 }
+// conditional function
+function choose(choice, option) {
+	// conditionals for user commands
+	switch(choice) {
+		case "Show someone's tweets.":
+			inquirer.prompt([{
+				type: "input",
+				name: "screenName",
+				message: "Who's tweets would you like to see (twitter handle)?"
+			}]).then(function(user) {
+				tweetIt(user.screenName);
+			});
+			break;
+		case "Spotify a song.":
+			inquirer.prompt([{
+				type: "confirm",
+				name: "ask",
+				message: "Have a song in mind?"
+			}]).then(function(user) {
+				user.ask ?
+					inquirer.prompt([{
+						type: "input",
+						name: "song",
+						message: "What song?"
+					}]).then(function(user) {
+						spotifyIt(user.song);
+					}):
+					aceofbase();
+			});
+			break;
+		case "IMDB a movie.":
+			inquirer.prompt([{
+				type: "confirm",
+				name: "ask",
+				message: "Have a movie in mind?"
+			}]).then(function(user) {
+				user.ask ?
+					inquirer.prompt([{
+						type: "input",
+						name: "movie",
+						message: "What movie?"
+					}]).then(function(user) {
+						movieIt(user.movie);
+					}):
+					MrNobody();
+			});
+			break;
+		case "Do what it says.":
+			doIt();
+			break;
+		case "tweet-it":
+			tweetIt(option);
+			break;
+		case "spotify-this-song":
+			option ? spotifyIt(option):aceofbase();
+			break;
+		case "movie-this":
+			option ? movieIt(option):MrNobody();
+			break;
+		default:
+			console.log("That's not legit.");
+	}
 
+}
 // api call functions
-function tweetIt() {
-	client.get("statuses/user_timeline", {screen_name: "aksm", count: 20}, function(error, tweets, response) {
-				if(error) throw error;
+function tweetIt(screenName) {
+	client.get("statuses/user_timeline", {screen_name: screenName, count: 20}, function(error, tweets, response) {
+				if(error) console.log("Something went wrong..."), choose("Show someone's tweets.");
 				for(var i = 0; i < tweets.length; i++) {
 					console.log((i + 1) % 2 == 0 ? magenta: cyan);
 					console.log(tweets[i].text);
@@ -42,7 +100,7 @@ function tweetIt() {
 				console.log(reset);
 			});
 }
-function spotifyIt() {
+function spotifyIt(title) {
 	spotify.search({ type: "track", query: title }, function(err, data) {
 		if(err) throw err;
 		for(var i = 0; i < data.tracks.items.length; i++) {
@@ -75,18 +133,16 @@ function aceofbase() {
 	});
 
 }
-function movieIt() {
+function movieIt(title) {
 	var url = "http://www.omdbapi.com/?s="+title;
 	request(url, function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			var movies = JSON.parse(body);
 			for(var i = 0; i < movies.Search.length; i++){
-				console.log(i);
 				var url = "http://www.omdbapi.com/?tomatoes=true&i="+movies.Search[i].imdbID;
 				request(url, function (error, response, body) {
 				  if (!error && response.statusCode == 200) {
 					var movies = JSON.parse(body);
-					console.log(i);
 					console.log((i + 1) % 2 == 0 ? magenta: cyan);
 					console.log("Title: "+movies.Title);
 					console.log("Release: "+movies.Year);
@@ -129,32 +185,21 @@ function MrNobody() {
 function doIt() {
 	fs.readFile("./random.txt", "utf8", (err, data) => {
 		if (err) throw err;
-		var random = data.split(",");
-		var args = "";
+		var random = data.split("\n");
 		for(var i = 0; i < random.length; i++) {
-			args = args+" "+random[i];
+			var randomLine = random[i].split(",");
+			randomLine.length == 2 ?
+			choose(randomLine[0], randomLine[1].split("'")[1]):
+			choose(randomLine[0]);
 		}
-		exec("node liri.js"+args, function(error, stdout, stderr) {
-			console.log(stdout);
-			console.log(stderr);
-		});
 	});
 }
-
-// conditionals for user commands
-switch(command) {
-	case "my-tweets":
-		tweetIt();
-		break;
-	case "spotify-this-song":
-		title ? spotifyIt() : aceofbase();
-		break;
-	case "movie-this":
-		title ? movieIt() : MrNobody();
-		break;
-	case "do-what-it-says":
-		doIt();
-		break;
-	default:
-		console.log("That's not legit.");
-}
+// Prompt user to choose commands
+inquirer.prompt([{
+	type: "list",
+	name: "choice",
+	message: "What would you like to do?",
+	choices: ["Show someone's tweets.", "Spotify a song.", "IMDB a movie.", "Do what it says."]
+}]).then(function(user) {
+	choose(user.choice);
+});
